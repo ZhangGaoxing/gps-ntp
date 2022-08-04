@@ -152,37 +152,43 @@ void GpsFrameReceived(object sender, SerialDataReceivedEventArgs e)
             DateTime utcNow = DateTime.ParseExact($"{date}{time}", "ddMMyyHHmmss", CultureInfo.InvariantCulture);
 
             // 更新系统时间
-            ProcessStartInfo processInfo;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                processInfo = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = $"Set-Date \"\"\"{utcNow.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")}\"\"\"",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
-            }
-            else
-            {
-                processInfo = new ProcessStartInfo
-                {
-                    FileName = "date",
-                    Arguments = $"-s \"{utcNow.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")}\"",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
-            }
-            var process = Process.Start(processInfo);
-            process.WaitForExit();
+            UpdateSystemTime(utcNow);
 
             lastUpdatedTime = utcNow;
 
             Console.WriteLine($"{lastUpdatedTime.ToLocalTime()}: {frame}");
         }
     }
+}
+
+void UpdateSystemTime(DateTime time)
+{
+    ProcessStartInfo processInfo;
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+    {
+        processInfo = new ProcessStartInfo
+        {
+            FileName = "powershell.exe",
+            Arguments = $"Set-Date \"\"\"{time.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")}\"\"\"",
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+    }
+    else
+    {
+        processInfo = new ProcessStartInfo
+        {
+            FileName = "date",
+            Arguments = $"-s \"{time.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")}\"",
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+    }
+
+    var process = Process.Start(processInfo);
+    process.WaitForExit();
 }
 
 Console.Read();
